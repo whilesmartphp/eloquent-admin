@@ -1,0 +1,10 @@
+name: eloquent-admin
+services:
+  app:
+    image: ghcr.io/whilesmartphp/laravel-dev:package-8.4
+    volumes:
+      - .:/app
+      - ../eloquent-engagement:/app/vendor/whilesmart/eloquent-engagement
+    working_dir: /app
+    command: tail -f /dev/null
+    environment: [APP_ENV=testing]
