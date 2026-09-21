@@ -21,6 +21,10 @@ return [
     'requests' => ['update_mail_template' => UpdateMailTemplateRequest::class],
     'resources' => ['user' => AdminUserResource::class, 'mail_template' => MailTemplateResource::class],
     'controller' => AdminController::class,
+    // Classes implementing OfferProvider. Registering one puts its discounts
+    // on the console; registering none leaves that page saying so.
+    'offer_providers' => [],
+
     'templates' => [],
     'tokens' => ['first_name', 'last_name', 'name', 'email'],
     'registration_template' => 'welcome',

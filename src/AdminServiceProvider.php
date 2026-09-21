@@ -8,6 +8,7 @@ use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
 use Whilesmart\Admin\Contracts\AdminUserProvider;
 use Whilesmart\Admin\Listeners\SendRegistrationEmail;
+use Whilesmart\Admin\Support\OfferRegistry;
 use Whilesmart\UserAuthentication\Events\UserRegisteredEvent;
 
 class AdminServiceProvider extends ServiceProvider
@@ -23,6 +24,11 @@ class AdminServiceProvider extends ServiceProvider
 
             return $app->make($provider);
         });
+
+        $this->app->singleton(
+            OfferRegistry::class,
+            fn () => new OfferRegistry((array) config('admin.offer_providers', [])),
+        );
     }
 
     public function boot(): void
