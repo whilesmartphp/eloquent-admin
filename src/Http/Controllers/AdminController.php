@@ -27,7 +27,7 @@ class AdminController extends Controller
      */
     public function offers(Request $request, OfferRegistry $offers): JsonResponse
     {
-        $this->authorizeOffers($request);
+        $this->authorizeConsole($request);
 
         return response()->json([
             'success' => true,
@@ -42,7 +42,7 @@ class AdminController extends Controller
 
     public function createOffer(Request $request, OfferRegistry $offers, string $provider): JsonResponse
     {
-        $this->authorizeOffers($request);
+        $this->authorizeConsole($request);
 
         // Defaulted rather than read straight out: a host that published this
         // config before the key existed has an array that wins over the one
@@ -56,7 +56,7 @@ class AdminController extends Controller
 
     public function revokeOffer(Request $request, OfferRegistry $offers, string $provider, string $id): JsonResponse
     {
-        $this->authorizeOffers($request);
+        $this->authorizeConsole($request);
 
         $this->offerProvider($offers, $provider)->revoke($id);
 
@@ -64,11 +64,11 @@ class AdminController extends Controller
     }
 
     /**
-     * Offers answer to the configured owner, the way a mail template answers to
-     * its own. Checked here rather than in the request, so a host swapping the
-     * request class cannot drop it.
+     * The console answers to the configured owner, the way a mail template
+     * answers to its own. Checked in the controller rather than in a request
+     * class, so a host swapping that class cannot drop it.
      */
-    private function authorizeOffers(Request $request): void
+    private function authorizeConsole(Request $request): void
     {
         $owner = config('admin.owner');
 
@@ -90,6 +90,8 @@ class AdminController extends Controller
 
     public function metrics(Request $request, EngagementManager $engagement, ClientRegistry $clients): JsonResponse
     {
+        $this->authorizeConsole($request);
+
         $granularity = in_array($request->query('granularity'), ['day', 'week', 'month'], true)
             ? $request->query('granularity')
             : 'day';
@@ -105,14 +107,18 @@ class AdminController extends Controller
 
     public function users(Request $request, AdminUserProvider $provider): JsonResponse
     {
+        $this->authorizeConsole($request);
+
         $resource = config('admin.resources.user', AdminUserResource::class);
         $users = $provider->paginate((string) $request->input('q', ''), (int) $request->input('per_page', 25));
 
         return response()->json(['success' => true, 'data' => $resource::collection($users)->response()->getData(true)]);
     }
 
-    public function user(mixed $id, AdminUserProvider $provider): JsonResponse
+    public function user(Request $request, mixed $id, AdminUserProvider $provider): JsonResponse
     {
+        $this->authorizeConsole($request);
+
         $resource = config('admin.resources.user', AdminUserResource::class);
         $user = $provider->find($id);
 
