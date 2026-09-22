@@ -2,6 +2,7 @@
 
 namespace Whilesmart\Admin\Support;
 
+use InvalidArgumentException;
 use Whilesmart\Admin\Contracts\OfferProvider;
 
 /**
@@ -22,9 +23,21 @@ class OfferRegistry
     public function __construct(array $providers = [])
     {
         foreach ($providers as $class) {
-            if (is_string($class) && is_subclass_of($class, OfferProvider::class)) {
-                $this->providers[app($class)->key()] = $class;
+            if (! is_string($class) || ! is_subclass_of($class, OfferProvider::class)) {
+                throw new InvalidArgumentException(
+                    'admin.offer_providers must name classes implementing '.OfferProvider::class.'.'
+                );
             }
+
+            $key = app($class)->key();
+
+            if (isset($this->providers[$key])) {
+                throw new InvalidArgumentException(
+                    "Two offer providers are registered under the key {$key}."
+                );
+            }
+
+            $this->providers[$key] = $class;
         }
     }
 

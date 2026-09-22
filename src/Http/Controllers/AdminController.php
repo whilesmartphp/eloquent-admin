@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Whilesmart\Admin\Contracts\AdminUserProvider;
 use Whilesmart\Admin\Contracts\OfferProvider;
-use Whilesmart\Admin\Http\Requests\CreateOfferRequest;
 use Whilesmart\Admin\Http\Resources\AdminUserResource;
 use Whilesmart\Admin\Mail\TemplateMail;
 use Whilesmart\Admin\Models\MailTemplate;
@@ -38,9 +37,10 @@ class AdminController extends Controller
         ]);
     }
 
-    public function createOffer(CreateOfferRequest $request, OfferRegistry $offers, string $provider): JsonResponse
+    public function createOffer(Request $request, OfferRegistry $offers, string $provider): JsonResponse
     {
-        $offer = $this->offerProvider($offers, $provider)->create($request->validated()['attributes']);
+        $validated = app(config('admin.requests.create_offer'))->validated();
+        $offer = $this->offerProvider($offers, $provider)->create($validated['attributes']);
 
         return response()->json(['success' => true, 'data' => $offer->toArray()], 201);
     }

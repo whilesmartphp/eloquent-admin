@@ -2,9 +2,15 @@
 
 namespace Tests\Feature;
 
+use Carbon\Carbon as BaseCarbon;
+use InvalidArgumentException;
 use Tests\Support\CouponOfferProvider;
+use Tests\Support\SecondCouponProvider;
+use Tests\Support\StrictCreateOfferRequest;
 use Tests\Support\User;
 use Tests\TestCase;
+use Whilesmart\Admin\Support\Offer;
+use Whilesmart\Admin\Support\OfferRegistry;
 
 /**
  * What the console can do with a host's discounts without knowing what backs
@@ -86,6 +92,45 @@ class OfferProviderTest extends TestCase
             ->getJson('api/admin/offers')
             ->assertOk()
             ->assertJsonPath('data.0.offers', []);
+    }
+
+    public function test_an_expiry_from_the_base_carbon_is_accepted(): void
+    {
+        $offer = new Offer(
+            id: '1',
+            code: 'PILOT20',
+            value: '20%',
+            expiresAt: BaseCarbon::parse('2026-01-01T00:00:00+00:00'),
+        );
+
+        $this->assertSame('2026-01-01T00:00:00+00:00', $offer->toArray()['expires_at']);
+    }
+
+    public function test_a_provider_that_does_not_implement_the_contract_is_refused(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        new OfferRegistry([User::class]);
+    }
+
+    public function test_two_providers_under_one_key_are_refused(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        new OfferRegistry([CouponOfferProvider::class, SecondCouponProvider::class]);
+    }
+
+    public function test_a_host_can_replace_the_request_that_validates_an_offer(): void
+    {
+        config(['admin.requests.create_offer' => StrictCreateOfferRequest::class]);
+
+        $this->actingAs($this->actor())
+            ->postJson('api/admin/offers/coupons', ['attributes' => [
+                'code' => 'PILOT20',
+                'percent_off' => 20,
+            ]])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('attributes.reason');
     }
 
     /**

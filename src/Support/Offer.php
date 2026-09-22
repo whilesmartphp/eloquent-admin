@@ -2,7 +2,7 @@
 
 namespace Whilesmart\Admin\Support;
 
-use Illuminate\Support\Carbon;
+use Carbon\Carbon;
 
 /**
  * One discount, as the console shows it. A provider keeps whatever else its

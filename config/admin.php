@@ -1,6 +1,7 @@
 <?php
 
 use Whilesmart\Admin\Http\Controllers\AdminController;
+use Whilesmart\Admin\Http\Requests\CreateOfferRequest;
 use Whilesmart\Admin\Http\Requests\UpdateMailTemplateRequest;
 use Whilesmart\Admin\Http\Resources\AdminUserResource;
 use Whilesmart\Admin\Http\Resources\MailTemplateResource;
@@ -18,7 +19,10 @@ return [
     'user_search_columns' => ['first_name', 'last_name', 'email'],
     'user_provider' => EloquentAdminUserProvider::class,
     'models' => ['mail_template' => MailTemplate::class],
-    'requests' => ['update_mail_template' => UpdateMailTemplateRequest::class],
+    'requests' => [
+        'update_mail_template' => UpdateMailTemplateRequest::class,
+        'create_offer' => CreateOfferRequest::class,
+    ],
     'resources' => ['user' => AdminUserResource::class, 'mail_template' => MailTemplateResource::class],
     'controller' => AdminController::class,
     // Classes implementing OfferProvider. Registering one puts its discounts
