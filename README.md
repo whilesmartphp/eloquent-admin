@@ -36,3 +36,58 @@ return [
 ```
 
 Each provider implements `Whilesmart\Engagement\Contracts\MetricProvider` and returns count, sum, ratio, series, or ranking metrics. Adding a provider automatically adds its measurements to the shared admin page.
+
+## Offers
+
+A discount is stored differently in every product, so the console asks a
+provider rather than a table. Register one and the discounts page lists what it
+holds and renders a form from the fields it declares.
+
+```php
+return [
+    'offer_providers' => [
+        App\Billing\CouponOfferProvider::class,
+    ],
+];
+```
+
+```php
+use Whilesmart\Admin\Contracts\OfferField;
+use Whilesmart\Admin\Contracts\OfferProvider;
+use Whilesmart\Admin\Support\Offer;
+
+class CouponOfferProvider implements OfferProvider
+{
+    public function key(): string
+    {
+        return 'coupons';
+    }
+
+    public function label(): string
+    {
+        return 'Coupons';
+    }
+
+    public function fields(): array
+    {
+        return [
+            new OfferField('code', 'Code', required: true),
+            new OfferField('percent_off', 'Percent off', 'number', required: true),
+            new OfferField('expires_at', 'Expires', 'date'),
+        ];
+    }
+
+    public function all(): array { /* Offer[] */ }
+
+    public function create(array $attributes): Offer { /* ... */ }
+
+    public function revoke(string $id): void { /* ... */ }
+}
+```
+
+`Offer::$value` is already formatted, because only the provider knows whether
+20 means a percentage, pennies or seats. Revoking stops an offer being redeemed
+again and leaves redemptions already made standing.
+
+Registering no provider is a supported state: the endpoint answers with an
+empty list and the page says so.
