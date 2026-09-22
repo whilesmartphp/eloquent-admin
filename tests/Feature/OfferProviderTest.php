@@ -8,6 +8,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon as LaravelCarbon;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\CouponOfferProvider;
 use Tests\Support\SecondCouponProvider;
 use Tests\Support\StrictCreateOfferRequest;
@@ -100,9 +101,7 @@ class OfferProviderTest extends TestCase
             ->assertJsonPath('data.0.offers', []);
     }
 
-    /**
-     * @dataProvider expiryDates
-     */
+    #[DataProvider('expiryDates')]
     public function test_any_date_a_host_holds_can_be_an_expiry(callable $make): void
     {
         $offer = new Offer(id: '1', code: 'PILOT20', value: '20%', expiresAt: $make());
@@ -186,9 +185,7 @@ class OfferProviderTest extends TestCase
             ->assertJsonValidationErrors('attributes.reason');
     }
 
-    /**
-     * @dataProvider unknownProvider
-     */
+    #[DataProvider('unknownProvider')]
     public function test_an_unregistered_provider_is_not_found(string $method, string $path): void
     {
         $this->actingAs($this->actor())
