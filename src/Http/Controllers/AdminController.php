@@ -6,9 +6,12 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Whilesmart\Admin\Contracts\AdminUserProvider;
+use Whilesmart\Admin\Contracts\OfferProvider;
+use Whilesmart\Admin\Http\Requests\CreateOfferRequest;
 use Whilesmart\Admin\Http\Resources\AdminUserResource;
 use Whilesmart\Admin\Mail\TemplateMail;
 use Whilesmart\Admin\Models\MailTemplate;
+use Whilesmart\Admin\Support\OfferRegistry;
 use Whilesmart\Admin\Support\TemplateRegistry;
 use Whilesmart\Engagement\EngagementManager;
 use Whilesmart\Engagement\Support\ClientRegistry;
@@ -17,6 +20,74 @@ use Whilesmart\OwnerAccess\Contracts\OwnerAuthorizer;
 
 class AdminController extends Controller
 {
+    /**
+     * Every registered provider, its fields, and its offers.
+     *
+     * A host with none registered gets an empty list, not an error.
+     */
+    public function offers(Request $request, OfferRegistry $offers): JsonResponse
+    {
+        $this->authorizeOffers($request);
+
+        return response()->json([
+            'success' => true,
+            'data' => array_values(array_map(fn ($provider) => [
+                'key' => $provider->key(),
+                'label' => $provider->label(),
+                'fields' => array_map(fn ($field) => $field->toArray(), $provider->fields()),
+                'offers' => array_map(fn ($offer) => $offer->toArray(), $provider->all()),
+            ], $offers->all())),
+        ]);
+    }
+
+    public function createOffer(Request $request, OfferRegistry $offers, string $provider): JsonResponse
+    {
+        $this->authorizeOffers($request);
+
+        // Defaulted rather than read straight out: a host that published this
+        // config before the key existed has an array that wins over the one
+        // shipped here, and would resolve nothing.
+        $requestClass = config('admin.requests.create_offer', CreateOfferRequest::class);
+        $validated = app($requestClass)->validated();
+        $offer = $this->offerProvider($offers, $provider)->create($validated['attributes']);
+
+        return response()->json(['success' => true, 'data' => $offer->toArray()], 201);
+    }
+
+    public function revokeOffer(Request $request, OfferRegistry $offers, string $provider, string $id): JsonResponse
+    {
+        $this->authorizeOffers($request);
+
+        $this->offerProvider($offers, $provider)->revoke($id);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Offers answer to the configured owner, the way a mail template answers to
+     * its own. Checked here rather than in the request, so a host swapping the
+     * request class cannot drop it.
+     */
+    private function authorizeOffers(Request $request): void
+    {
+        $owner = config('admin.owner');
+
+        abort_unless(app(OwnerAuthorizer::class)->authorize(
+            $request->user(),
+            $owner['type'],
+            $owner['id'],
+        ), 403);
+    }
+
+    private function offerProvider(OfferRegistry $offers, string $key): OfferProvider
+    {
+        $provider = $offers->get($key);
+
+        abort_if($provider === null, 404, 'No offer provider is registered under that key.');
+
+        return $provider;
+    }
+
     public function metrics(Request $request, EngagementManager $engagement, ClientRegistry $clients): JsonResponse
     {
         $granularity = in_array($request->query('granularity'), ['day', 'week', 'month'], true)
