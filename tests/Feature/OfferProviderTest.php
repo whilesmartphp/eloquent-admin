@@ -14,6 +14,7 @@ use Tests\Support\SecondCouponProvider;
 use Tests\Support\StrictCreateOfferRequest;
 use Tests\Support\User;
 use Tests\TestCase;
+use Whilesmart\Admin\Contracts\OfferField;
 use Whilesmart\Admin\Http\Requests\UpdateMailTemplateRequest;
 use Whilesmart\Admin\Support\Offer;
 use Whilesmart\Admin\Support\OfferRegistry;
@@ -199,5 +200,16 @@ class OfferProviderTest extends TestCase
             'creating' => ['POST', 'api/admin/offers/credits'],
             'revoking' => ['DELETE', 'api/admin/offers/credits/1'],
         ];
+    }
+
+    public function test_a_field_may_ask_for_a_person(): void
+    {
+        $field = new OfferField(
+            name: 'for_email',
+            label: 'Only for',
+            type: 'user',
+        );
+
+        $this->assertSame('user', $field->toArray()['type']);
     }
 }
