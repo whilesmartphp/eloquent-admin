@@ -2,7 +2,7 @@
     "name": "whilesmart/eloquent-admin",
     "description": "Shared measurements, user directory and automatic email templates for Laravel applications.",
     "type": "library",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "license": "MIT",
     "authors": [{ "name": "Whilesmart Team" }],
     "require": {

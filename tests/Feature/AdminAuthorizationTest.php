@@ -38,4 +38,12 @@ class AdminAuthorizationTest extends TestCase
             'body' => 'No',
         ])->assertForbidden();
     }
+
+    #[Test]
+    public function the_directory_and_the_report_are_forbidden_when_authorization_denies(): void
+    {
+        $this->getJson('/api/admin/users')->assertForbidden();
+        $this->getJson('/api/admin/users/1')->assertForbidden();
+        $this->getJson('/api/admin/metrics')->assertForbidden();
+    }
 }
