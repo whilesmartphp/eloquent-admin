@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 $controller = config('admin.controller');
 Route::get('metrics', [$controller, 'metrics']);
+Route::get('features', [$controller, 'features']);
 Route::get('posthog', [$controller, 'posthog']);
 Route::get('offers', [$controller, 'offers']);
 Route::post('offers/{provider}', [$controller, 'createOffer'])->middleware(config('admin.write_middleware', []));
