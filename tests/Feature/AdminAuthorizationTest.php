@@ -45,6 +45,6 @@ class AdminAuthorizationTest extends TestCase
         $this->getJson('/api/admin/users')->assertForbidden();
         $this->getJson('/api/admin/users/1')->assertForbidden();
         $this->getJson('/api/admin/metrics')->assertForbidden();
-        $this->getJson('/api/admin/analytics')->assertForbidden();
+        $this->getJson('/api/admin/posthog')->assertForbidden();
     }
 }

@@ -89,21 +89,24 @@ class AdminController extends Controller
     }
 
     /**
-     * Only an https address is handed out: the console puts it in a frame, and
-     * anything else would load a script address or an insecure page there.
+     * Only a shared dashboard's https address is handed out: the console puts it
+     * in a frame, and anything else would load a script address, an insecure
+     * page, or a PostHog page that needs signing in there. The host is not
+     * checked, so a self-hosted PostHog works too.
      */
-    public function analytics(Request $request): JsonResponse
+    public function posthog(Request $request): JsonResponse
     {
         $this->authorizeConsole($request);
 
-        $url = config('admin.analytics.dashboard_url');
-        $secure = is_string($url)
+        $url = config('admin.posthog.dashboard_url');
+        $shared = is_string($url)
             && filter_var($url, FILTER_VALIDATE_URL) !== false
-            && strtolower((string) parse_url($url, PHP_URL_SCHEME)) === 'https';
+            && strtolower((string) parse_url($url, PHP_URL_SCHEME)) === 'https'
+            && str_starts_with((string) parse_url($url, PHP_URL_PATH), '/embedded/');
 
         return response()->json([
             'success' => true,
-            'data' => ['dashboard_url' => $secure ? $url : null],
+            'data' => ['dashboard_url' => $shared ? $url : null],
         ]);
     }
 
