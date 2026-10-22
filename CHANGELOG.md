@@ -1,7 +1,7 @@
 ## [Unreleased]
 
 ### Added
-- `GET analytics`, answering to the configured owner, returns the shared analytics dashboard set in `admin.analytics.dashboard_url`. Only an https address is returned
+- `GET posthog`, answering to the configured owner, returns the publicly shared PostHog dashboard set in `admin.posthog.dashboard_url`. Only an https address of a shared dashboard is returned
 
 ## [0.2.1] - 2026-09-22
 - The user directory, a single user, and the engagement report answer to the configured owner, as every other endpoint here already did. They were reachable by any authenticated caller

@@ -37,16 +37,17 @@ return [
 
 Each provider implements `Whilesmart\Engagement\Contracts\MetricProvider` and returns count, sum, ratio, series, or ranking metrics. Adding a provider automatically adds its measurements to the shared admin page.
 
-## Analytics
+## PostHog
 
-Set the address of a publicly shared dashboard (a PostHog shared dashboard, for
-example) and the console shows it on its analytics page. Anyone holding that
-address can read the dashboard, so it is returned only to the configured owner,
-and only when it is https.
+Share a PostHog dashboard publicly (Share, then turn on sharing) and set its
+embed address, `https://us.posthog.com/embedded/<id>`, and the console shows it
+on its PostHog page. Anyone holding that address can read the dashboard, so it
+is returned only to the configured owner, and only when it is the https address
+of a shared dashboard.
 
 ```php
 return [
-    'analytics' => ['dashboard_url' => env('ADMIN_ANALYTICS_DASHBOARD_URL')],
+    'posthog' => ['dashboard_url' => env('ADMIN_POSTHOG_DASHBOARD_URL')],
 ];
 ```
 
