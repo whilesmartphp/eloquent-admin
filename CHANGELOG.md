@@ -1,6 +1,7 @@
 ## [Unreleased]
 
 ### Added
+- `GET features`, answering to the configured owner, says which optional console pages this host serves: feedback once its package's routes are under the console prefix, PostHog once a shared dashboard is set
 - `GET posthog`, answering to the configured owner, returns the publicly shared PostHog dashboard set in `admin.posthog.dashboard_url`. Only an https address of a shared dashboard is returned
 
 ## [0.2.1] - 2026-09-22

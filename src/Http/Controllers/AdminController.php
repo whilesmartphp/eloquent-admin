@@ -5,6 +5,7 @@ namespace Whilesmart\Admin\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Route;
 use Whilesmart\Admin\Contracts\AdminUserProvider;
 use Whilesmart\Admin\Contracts\OfferProvider;
 use Whilesmart\Admin\Http\Requests\CreateOfferRequest;
@@ -89,6 +90,27 @@ class AdminController extends Controller
     }
 
     /**
+     * The pages whose backend is optional, and whether this host serves them, so
+     * the console offers only what will load. Feedback comes from its own
+     * package and is served once that package's routes sit under this prefix.
+     */
+    public function features(Request $request): JsonResponse
+    {
+        $this->authorizeConsole($request);
+
+        $feedback = trim((string) config('admin.route_prefix', 'api/admin'), '/').'/feedback';
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'feedback' => collect(Route::getRoutes()->getRoutes())
+                    ->contains(fn ($route) => $route->uri() === $feedback && in_array('GET', $route->methods(), true)),
+                'posthog' => $this->sharedDashboard() !== null,
+            ],
+        ]);
+    }
+
+    /**
      * Only a shared dashboard's https address is handed out: the console puts it
      * in a frame, and anything else would load a script address, an insecure
      * page, or a PostHog page that needs signing in there. The host is not
@@ -98,16 +120,22 @@ class AdminController extends Controller
     {
         $this->authorizeConsole($request);
 
-        $url = config('admin.posthog.dashboard_url');
-        $shared = is_string($url)
-            && filter_var($url, FILTER_VALIDATE_URL) !== false
-            && strtolower((string) parse_url($url, PHP_URL_SCHEME)) === 'https'
-            && str_starts_with((string) parse_url($url, PHP_URL_PATH), '/embedded/');
-
         return response()->json([
             'success' => true,
-            'data' => ['dashboard_url' => $shared ? $url : null],
+            'data' => ['dashboard_url' => $this->sharedDashboard()],
         ]);
+    }
+
+    private function sharedDashboard(): ?string
+    {
+        $url = config('admin.posthog.dashboard_url');
+
+        return is_string($url)
+            && filter_var($url, FILTER_VALIDATE_URL) !== false
+            && strtolower((string) parse_url($url, PHP_URL_SCHEME)) === 'https'
+            && str_starts_with((string) parse_url($url, PHP_URL_PATH), '/embedded/')
+            ? $url
+            : null;
     }
 
     public function metrics(Request $request, EngagementManager $engagement, ClientRegistry $clients): JsonResponse

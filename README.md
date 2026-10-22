@@ -51,6 +51,13 @@ return [
 ];
 ```
 
+## Optional pages
+
+`GET features` tells the console which optional pages this host serves, so it
+offers only pages that load. Feedback is on once `whilesmart/eloquent-feedback`
+serves its routes under the console's prefix; PostHog is on once a shared
+dashboard is set.
+
 ## Offers
 
 A discount is stored differently in every product, so the console asks a
