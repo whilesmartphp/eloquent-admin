@@ -28,6 +28,9 @@ return [
     // Classes implementing OfferProvider. Registering one puts its discounts
     // on the console; registering none leaves that page saying so.
     'offer_providers' => [],
+    // A shared analytics dashboard the console shows in a frame. Anyone with
+    // its link can read it, so it is handed only to the configured owner.
+    'analytics' => ['dashboard_url' => env('ADMIN_ANALYTICS_DASHBOARD_URL')],
 
     'templates' => [],
     'tokens' => ['first_name', 'last_name', 'name', 'email'],

@@ -88,6 +88,25 @@ class AdminController extends Controller
         return $provider;
     }
 
+    /**
+     * Only an https address is handed out: the console puts it in a frame, and
+     * anything else would load a script address or an insecure page there.
+     */
+    public function analytics(Request $request): JsonResponse
+    {
+        $this->authorizeConsole($request);
+
+        $url = config('admin.analytics.dashboard_url');
+        $secure = is_string($url)
+            && filter_var($url, FILTER_VALIDATE_URL) !== false
+            && strtolower((string) parse_url($url, PHP_URL_SCHEME)) === 'https';
+
+        return response()->json([
+            'success' => true,
+            'data' => ['dashboard_url' => $secure ? $url : null],
+        ]);
+    }
+
     public function metrics(Request $request, EngagementManager $engagement, ClientRegistry $clients): JsonResponse
     {
         $this->authorizeConsole($request);
