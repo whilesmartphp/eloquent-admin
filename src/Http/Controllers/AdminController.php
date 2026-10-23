@@ -5,6 +5,7 @@ namespace Whilesmart\Admin\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Route;
 use Whilesmart\Admin\Contracts\AdminUserProvider;
 use Whilesmart\Admin\Contracts\OfferProvider;
 use Whilesmart\Admin\Http\Requests\CreateOfferRequest;
@@ -27,7 +28,7 @@ class AdminController extends Controller
      */
     public function offers(Request $request, OfferRegistry $offers): JsonResponse
     {
-        $this->authorizeOffers($request);
+        $this->authorizeConsole($request);
 
         return response()->json([
             'success' => true,
@@ -36,13 +37,14 @@ class AdminController extends Controller
                 'label' => $provider->label(),
                 'fields' => array_map(fn ($field) => $field->toArray(), $provider->fields()),
                 'offers' => array_map(fn ($offer) => $offer->toArray(), $provider->all()),
+                'columns' => method_exists($provider, 'columns') ? $provider->columns() : null,
             ], $offers->all())),
         ]);
     }
 
     public function createOffer(Request $request, OfferRegistry $offers, string $provider): JsonResponse
     {
-        $this->authorizeOffers($request);
+        $this->authorizeConsole($request);
 
         // Defaulted rather than read straight out: a host that published this
         // config before the key existed has an array that wins over the one
@@ -56,7 +58,7 @@ class AdminController extends Controller
 
     public function revokeOffer(Request $request, OfferRegistry $offers, string $provider, string $id): JsonResponse
     {
-        $this->authorizeOffers($request);
+        $this->authorizeConsole($request);
 
         $this->offerProvider($offers, $provider)->revoke($id);
 
@@ -64,11 +66,11 @@ class AdminController extends Controller
     }
 
     /**
-     * Offers answer to the configured owner, the way a mail template answers to
-     * its own. Checked here rather than in the request, so a host swapping the
-     * request class cannot drop it.
+     * The console answers to the configured owner, the way a mail template
+     * answers to its own. Checked in the controller rather than in a request
+     * class, so a host swapping that class cannot drop it.
      */
-    private function authorizeOffers(Request $request): void
+    private function authorizeConsole(Request $request): void
     {
         $owner = config('admin.owner');
 
@@ -88,8 +90,59 @@ class AdminController extends Controller
         return $provider;
     }
 
+    /**
+     * The pages whose backend is optional, and whether this host serves them, so
+     * the console offers only what will load. Feedback comes from its own
+     * package and is served once that package's routes sit under this prefix.
+     */
+    public function features(Request $request): JsonResponse
+    {
+        $this->authorizeConsole($request);
+
+        $feedback = trim((string) config('admin.route_prefix', 'api/admin'), '/').'/feedback';
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'feedback' => collect(Route::getRoutes()->getRoutes())
+                    ->contains(fn ($route) => $route->uri() === $feedback && in_array('GET', $route->methods(), true)),
+                'posthog' => $this->sharedDashboard() !== null,
+            ],
+        ]);
+    }
+
+    /**
+     * Only a shared dashboard's https address is handed out: the console puts it
+     * in a frame, and anything else would load a script address, an insecure
+     * page, or a PostHog page that needs signing in there. The host is not
+     * checked, so a self-hosted PostHog works too.
+     */
+    public function posthog(Request $request): JsonResponse
+    {
+        $this->authorizeConsole($request);
+
+        return response()->json([
+            'success' => true,
+            'data' => ['dashboard_url' => $this->sharedDashboard()],
+        ]);
+    }
+
+    private function sharedDashboard(): ?string
+    {
+        $url = config('admin.posthog.dashboard_url');
+
+        return is_string($url)
+            && filter_var($url, FILTER_VALIDATE_URL) !== false
+            && strtolower((string) parse_url($url, PHP_URL_SCHEME)) === 'https'
+            && str_starts_with((string) parse_url($url, PHP_URL_PATH), '/embedded/')
+            ? $url
+            : null;
+    }
+
     public function metrics(Request $request, EngagementManager $engagement, ClientRegistry $clients): JsonResponse
     {
+        $this->authorizeConsole($request);
+
         $granularity = in_array($request->query('granularity'), ['day', 'week', 'month'], true)
             ? $request->query('granularity')
             : 'day';
@@ -105,14 +158,18 @@ class AdminController extends Controller
 
     public function users(Request $request, AdminUserProvider $provider): JsonResponse
     {
+        $this->authorizeConsole($request);
+
         $resource = config('admin.resources.user', AdminUserResource::class);
         $users = $provider->paginate((string) $request->input('q', ''), (int) $request->input('per_page', 25));
 
         return response()->json(['success' => true, 'data' => $resource::collection($users)->response()->getData(true)]);
     }
 
-    public function user(mixed $id, AdminUserProvider $provider): JsonResponse
+    public function user(Request $request, mixed $id, AdminUserProvider $provider): JsonResponse
     {
+        $this->authorizeConsole($request);
+
         $resource = config('admin.resources.user', AdminUserResource::class);
         $user = $provider->find($id);
 

@@ -28,6 +28,9 @@ return [
     // Classes implementing OfferProvider. Registering one puts its discounts
     // on the console; registering none leaves that page saying so.
     'offer_providers' => [],
+    // A publicly shared PostHog dashboard the console shows in a frame. Anyone
+    // with its link can read it, so it is handed only to the configured owner.
+    'posthog' => ['dashboard_url' => env('ADMIN_POSTHOG_DASHBOARD_URL')],
 
     'templates' => [],
     'tokens' => ['first_name', 'last_name', 'name', 'email'],

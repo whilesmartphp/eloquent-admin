@@ -37,6 +37,27 @@ return [
 
 Each provider implements `Whilesmart\Engagement\Contracts\MetricProvider` and returns count, sum, ratio, series, or ranking metrics. Adding a provider automatically adds its measurements to the shared admin page.
 
+## PostHog
+
+Share a PostHog dashboard publicly (Share, then turn on sharing) and set its
+embed address, `https://us.posthog.com/embedded/<id>`, and the console shows it
+on its PostHog page. Anyone holding that address can read the dashboard, so it
+is returned only to the configured owner, and only when it is the https address
+of a shared dashboard.
+
+```php
+return [
+    'posthog' => ['dashboard_url' => env('ADMIN_POSTHOG_DASHBOARD_URL')],
+];
+```
+
+## Optional pages
+
+`GET features` tells the console which optional pages this host serves, so it
+offers only pages that load. Feedback is on once `whilesmart/eloquent-feedback`
+serves its routes under the console's prefix; PostHog is on once a shared
+dashboard is set.
+
 ## Offers
 
 A discount is stored differently in every product, so the console asks a
@@ -91,3 +112,21 @@ again and leaves redemptions already made standing.
 
 Registering no provider is a supported state: the endpoint answers with an
 empty list and the page says so.
+
+Two providers ship with the console, each needing its billing package:
+
+| Provider | Package | What revoking does |
+|---|---|---|
+| `Whilesmart\Admin\Offers\StripePromotionCodes` | `whilesmart/entitlements-cashier` | Stops the code and takes it off subscriptions already carrying it |
+| `Whilesmart\Admin\Offers\FreePasses` | `whilesmart/eloquent-entitlements` | Ends the person's free plan at once |
+
+The page heads its table for discount codes. A provider whose offers are
+something else, such as a plan given to a person, names the columns it fills
+with a `columns()` method, and the ones it leaves out are hidden:
+
+```php
+public function columns(): array
+{
+    return ['code' => 'Person', 'value' => 'Plan', 'until' => 'Until'];
+}
+```

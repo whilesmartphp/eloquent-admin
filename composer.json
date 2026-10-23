@@ -2,7 +2,7 @@
     "name": "whilesmart/eloquent-admin",
     "description": "Shared measurements, user directory and automatic email templates for Laravel applications.",
     "type": "library",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "license": "MIT",
     "authors": [{ "name": "Whilesmart Team" }],
     "require": {
@@ -15,7 +15,13 @@
     "require-dev": {
         "orchestra/testbench": "^9.0|^10.0",
         "laravel/pint": "^1.22",
-        "fakerphp/faker": "^1.24"
+        "fakerphp/faker": "^1.24",
+        "whilesmart/eloquent-entitlements": "^2.1",
+        "whilesmart/entitlements-cashier": "^0.4"
+    },
+    "suggest": {
+        "whilesmart/eloquent-entitlements": "Free passes on the discounts page (^2.1)",
+        "whilesmart/entitlements-cashier": "Stripe discount codes on the discounts page (^0.4)"
     },
     "config": { "platform": { "php": "8.2" } },
     "autoload": { "psr-4": { "Whilesmart\\Admin\\": "src/", "Whilesmart\\Admin\\Database\\Factories\\": "database/factories/" } },

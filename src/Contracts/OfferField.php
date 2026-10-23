@@ -8,7 +8,9 @@ namespace Whilesmart\Admin\Contracts;
 final class OfferField
 {
     /**
-     * @param  'text'|'number'|'date'|'select'|'boolean'  $type
+     * @param  'text'|'number'|'date'|'select'|'boolean'|'user'  $type  'user' is
+     *                                                                  an address the console can search its own directory for,
+     *                                                                  while still accepting one typed in full.
      * @param  array<int|string, string>  $options  For 'select', value => label.
      */
     public function __construct(
