@@ -112,3 +112,14 @@ again and leaves redemptions already made standing.
 
 Registering no provider is a supported state: the endpoint answers with an
 empty list and the page says so.
+
+The page heads its table for discount codes. A provider whose offers are
+something else, such as a plan given to a person, names the columns it fills
+with a `columns()` method, and the ones it leaves out are hidden:
+
+```php
+public function columns(): array
+{
+    return ['code' => 'Person', 'value' => 'Plan', 'until' => 'Until'];
+}
+```

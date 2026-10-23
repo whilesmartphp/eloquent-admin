@@ -37,6 +37,7 @@ class AdminController extends Controller
                 'label' => $provider->label(),
                 'fields' => array_map(fn ($field) => $field->toArray(), $provider->fields()),
                 'offers' => array_map(fn ($offer) => $offer->toArray(), $provider->all()),
+                'columns' => method_exists($provider, 'columns') ? $provider->columns() : null,
             ], $offers->all())),
         ]);
     }

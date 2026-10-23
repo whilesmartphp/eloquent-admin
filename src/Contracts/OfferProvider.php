@@ -6,6 +6,10 @@ use Whilesmart\Admin\Support\Offer;
 
 /**
  * Lists and creates a host's discounts without knowing what stores them.
+ *
+ * A provider may also define `columns(): array`, mapping the offer columns
+ * (code, value, lasts, used, until) to the headings the console shows. A column
+ * it leaves out is hidden. Without it, the console uses its discount headings.
  */
 interface OfferProvider
 {

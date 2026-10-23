@@ -10,6 +10,7 @@ use Illuminate\Support\Carbon as LaravelCarbon;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\CouponOfferProvider;
+use Tests\Support\PassOfferProvider;
 use Tests\Support\SecondCouponProvider;
 use Tests\Support\StrictCreateOfferRequest;
 use Tests\Support\User;
@@ -50,6 +51,17 @@ class OfferProviderTest extends TestCase
             ->assertJsonPath('data.0.fields.0.required', true)
             ->assertJsonPath('data.0.fields.1.type', 'number')
             ->assertJsonPath('data.0.offers', []);
+    }
+
+    public function test_a_provider_may_name_the_columns_its_offers_fill(): void
+    {
+        config(['admin.offer_providers' => [CouponOfferProvider::class, PassOfferProvider::class]]);
+
+        $this->actingAs($this->actor())
+            ->getJson('api/admin/offers')
+            ->assertOk()
+            ->assertJsonPath('data.0.columns', null)
+            ->assertJsonPath('data.1.columns', ['code' => 'Person', 'value' => 'Plan', 'until' => 'Until']);
     }
 
     public function test_a_host_with_no_provider_gets_an_empty_list_rather_than_an_error(): void
