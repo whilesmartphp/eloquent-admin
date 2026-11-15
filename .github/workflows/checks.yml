@@ -13,6 +13,10 @@ jobs:
       fail-fast: false
       matrix:
         php-version: ['8.2', '8.3', '8.4']
+        authentication: ['^1.0', '^2.0']
+        exclude:
+          - php-version: '8.2'
+            authentication: '^2.0'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -23,7 +27,9 @@ jobs:
           extensions: mbstring, pdo, pdo_sqlite, sqlite
           coverage: none
       - name: Install dependencies
-        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+        run: |
+          composer config platform.php '${{ matrix.php-version }}'
+          composer require 'whilesmart/laravel-user-authentication:${{ matrix.authentication }}' --with-all-dependencies --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
       - name: Run tests
         run: vendor/bin/testbench package:test
       - name: Run linter test
