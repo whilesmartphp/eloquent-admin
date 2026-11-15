@@ -2,6 +2,10 @@
 
 Shared administration APIs for Laravel applications. It provides measurements, a user directory, and a registry-backed automatic email template system while leaving authorization, user fields, and product-specific sections to the host.
 
+## Authentication compatibility
+
+Supports `whilesmart/laravel-user-authentication` versions 1 and 2. Version 1 supports PHP 8.2; version 2 requires PHP 8.3 or newer. Registration emails use the authentication package's registration event with either version.
+
 ## Host configuration
 
 ```php

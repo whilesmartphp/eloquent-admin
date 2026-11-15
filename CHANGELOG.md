@@ -1,3 +1,8 @@
+## [0.3.1] - 2026-11-15
+
+### Fixed
+- Allow authentication package version 2 while retaining version 1 compatibility for PHP 8.2 applications.
+
 ## [0.3.0] - 2026-10-23
 
 ### Added
