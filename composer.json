@@ -10,7 +10,7 @@
         "laravel/framework": "^11.0|^12.0",
         "whilesmart/eloquent-engagement": "^1.0",
         "whilesmart/eloquent-owner-access": "^1.0",
-        "whilesmart/laravel-user-authentication": "^1.0"
+        "whilesmart/laravel-user-authentication": "^1.0|^2.0"
     },
     "require-dev": {
         "orchestra/testbench": "^9.0|^10.0",
